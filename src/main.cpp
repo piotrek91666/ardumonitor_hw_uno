@@ -1,15 +1,14 @@
 #include <SPI.h>
-//#include <Ethernet.h>
 #include <DHT22.h>
 #include "address.h"
 
-bool error_state = 0;
+bool conn_error_state = 0;
 
 DHT22 myDHT22(DHT22_PIN);
-EthernetClient client;
+EthernetClient ethClient;
 
 void server_connect(IPAddress ip, int port) {
-  if (client.connect(ip, port)) {
+  if (ethClient.connect(ip, port)) {
     Serial.println("conn OK.");
   } else {
     Serial.println("conn FAILED!");
@@ -45,11 +44,11 @@ void loop() {
     ;
   }
 
-  if (client.connected() == 0) {
+  if (ethClient.connected() == 0) {
     digitalWrite(ERROR_PIN, HIGH);
     Serial.println("conn RETRY.");
-    client.flush();
-    client.stop();
+    ethClient.flush();
+    ethClient.stop();
     server_connect(dst_server, dst_port);
   }
   else {
@@ -73,5 +72,5 @@ void loop() {
 
   json_output += "}}";
   Serial.println(json_output);
-  client.println(json_output);
+  ethClient.println(json_output);
 }
