@@ -19,12 +19,12 @@ String server_read(EthernetClient etc_cli, short bytes) {
   return msg;
 }
 
-bool server_negotiate() {
+void server_negotiate() {
   Serial.println("CNEG");
   char msg[13];
 
   // Server say Hello
-  if (server_read(ethClient, 3).toInt() != 100) return false;
+  if (server_read(ethClient, 3).toInt() != 100) for (;;);
 
   // Send your name
   sprintf(msg, "IAM:%s-%s", DEVICE_ID, FIRMWARE_VER);
@@ -32,9 +32,8 @@ bool server_negotiate() {
   delay(250);
 
   // Confirmation from server
-  if (server_read(ethClient, 3).toInt() != 120) return false;
+  if (server_read(ethClient, 3).toInt() != 120) for (;;);
   ethClient.print("OK");
-  return true;
 }
 
 void server_connect(IPAddress ip, int port) {
@@ -52,6 +51,7 @@ void server_connect(IPAddress ip, int port) {
 
     // If 5 tries are failed, hang program.
     if (t>=4) for (;;);
+    delay(5000);
   }
 }
 
