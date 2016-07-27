@@ -82,23 +82,25 @@ void loop() {
     digitalWrite(ERROR_PIN, LOW);
   }
 
-  String json_output = "";
-
-  // Sensor000 - DHT22
-  DHT22_ERROR_t errorCode;
+  // Delay time
   delay(5000);
-  errorCode = myDHT22.readData();
 
-  json_output += "{'s000':{'name':'DHT22'";
-  json_output += ",'err':" + String(errorCode);
+  // Fetch data from sensors
+  char s_data[64];
 
-  if ((errorCode == DHT_ERROR_NONE) || (errorCode == DHT_ERROR_CHECKSUM)) {
-    json_output += ",'temp_c':" + String(myDHT22.getTemperatureC());
-    json_output += ",'humidity':" + String(myDHT22.getHumidity());
+  // S00 - DHT22
+  DHT22_ERROR_t dhtCode;
+  dhtCode = myDHT22.readData();
+
+  sprintf(s_data, "S000:['name':'DHT22','err':%i", dhtCode);
+
+  if ((dhtCode == DHT_ERROR_NONE) || (dhtCode == DHT_ERROR_CHECKSUM)) {
+    sprintf(s_data, "%s,'temp_c':%hi.%01hi,'humid':%hi.%01hi", s_data,
+      myDHT22.getTemperatureCInt()/10, abs(myDHT22.getTemperatureCInt())%10,
+      myDHT22.getHumidityInt()/10, abs(myDHT22.getHumidityInt())%10
+      );
   }
-
-  json_output += "}}";
-  //Serial.println(json_output);
-  ethClient.print(json_output);
+  sprintf(s_data, "%s]", s_data);
+  ethClient.print(s_data);
 
 }
