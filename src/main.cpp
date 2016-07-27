@@ -5,7 +5,7 @@
 DHT22 myDHT22(DHT22_PIN);
 EthernetClient ethClient;
 
-String server_read(EthernetClient etc_cli, short bytes) {
+String server_read(short bytes) {
   char c;
   String msg = "";
   short i = 0;
@@ -24,7 +24,7 @@ void server_negotiate() {
   char msg[13];
 
   // Server say Hello
-  if (server_read(ethClient, 3).toInt() != 100) for (;;);
+  if (server_read(3).toInt() != 100) ethClient.stop();
 
   // Send your name
   sprintf(msg, "IAM:%s-%s", DEVICE_ID, FIRMWARE_VER);
@@ -32,7 +32,7 @@ void server_negotiate() {
   delay(250);
 
   // Confirmation from server
-  if (server_read(ethClient, 3).toInt() != 120) for (;;);
+  if (server_read(3).toInt() != 120) ethClient.stop();
   ethClient.print("OK");
 }
 
