@@ -32,7 +32,7 @@ void server_negotiate() {
   delay(250);
 
   // Confirmation from server
-  if (server_read(3).toInt() != 120) ethClient.stop();
+  if (server_read(3).toInt() != 110) ethClient.stop();
   ethClient.print("OK");
 }
 
@@ -83,7 +83,7 @@ void loop() {
   }
 
   // Delay time
-  delay(5000);
+  delay(2000);
 
   // Fetch data from sensors
   char s_data[64];
