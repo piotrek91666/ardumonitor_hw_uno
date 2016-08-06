@@ -1,9 +1,14 @@
 #include <SPI.h>
 #include <DHT22.h>
+#include <Adafruit_BMP085.h>
 #include "address.h"
 
 DHT22 myDHT22(DHT22_PIN);
+Adafruit_BMP085 myBMP180;
 EthernetClient ethClient;
+bool BMP180_stat = true;
+//char s_data[64];
+char ftos_fix[6];
 
 String server_read(short bytes) {
   char c;
@@ -59,12 +64,15 @@ void setup() {
   Serial.begin(9600);
   pinMode(ERROR_PIN, OUTPUT);
 
+  if (myBMP180.begin())
+  {
+    BMP180_stat = false;
+  }
   // Configure DHCP
   if (Ethernet.begin(mac) == 0) {
     Serial.println("DFAIL");
     for (;;);
   }
-
   server_connect(dst_server, dst_port);
   server_negotiate();
 }
@@ -84,15 +92,12 @@ void loop() {
 
   // Delay time
   delay(2000);
-
-  // Fetch data from sensors
-  char s_data[64];
-
-  // S00 - DHT22
+char s_data[64];
+  // S000 - DHT22
   DHT22_ERROR_t dhtCode;
   dhtCode = myDHT22.readData();
 
-  sprintf(s_data, "S000:['name':'DHT22','err':%i", dhtCode);
+  sprintf(s_data, "S000:{'name':'DHT22','err':%i", dhtCode);
 
   if ((dhtCode == DHT_ERROR_NONE) || (dhtCode == DHT_ERROR_CHECKSUM)) {
     sprintf(s_data, "%s,'temp_c':%hi.%01hi,'humid':%hi.%01hi", s_data,
@@ -100,7 +105,17 @@ void loop() {
       myDHT22.getHumidityInt()/10, abs(myDHT22.getHumidityInt())%10
       );
   }
-  sprintf(s_data, "%s]", s_data);
-  ethClient.print(s_data);
+  sprintf(s_data, "%s};", s_data);
+  ethClient.write(s_data, strlen(s_data));
+
+  // S001 - BMP180
+  sprintf(s_data, "S001:{'name':'BMP180','err':%i", BMP180_stat);
+  if (!BMP180_stat) {
+    dtostrf(myBMP180.readTemperature(), 5, 2, ftos_fix);
+    sprintf(s_data, "%s,'temp_c':%s,'press_pa':%lu", s_data,
+      ftos_fix, myBMP180.readPressure());
+  }
+  sprintf(s_data, "%s};", s_data);
+  ethClient.write(s_data, strlen(s_data));
 
 }
