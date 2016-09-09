@@ -97,7 +97,7 @@ char s_data[64];
   DHT22_ERROR_t dhtCode;
   dhtCode = myDHT22.readData();
 
-  sprintf(s_data, "S000:{'name':'DHT22','err':%i", dhtCode);
+  sprintf(s_data, "S000={'name':'DHT22','err':%i", dhtCode);
 
   if ((dhtCode == DHT_ERROR_NONE) || (dhtCode == DHT_ERROR_CHECKSUM)) {
     sprintf(s_data, "%s,'temp_c':%hi.%01hi,'humid':%hi.%01hi", s_data,
@@ -109,7 +109,7 @@ char s_data[64];
   ethClient.write(s_data, strlen(s_data));
 
   // S001 - BMP180
-  sprintf(s_data, "S001:{'name':'BMP180','err':%i", BMP180_stat);
+  sprintf(s_data, "S001={'name':'BMP180','err':%i", BMP180_stat);
   if (!BMP180_stat) {
     dtostrf(myBMP180.readTemperature(), 5, 2, ftos_fix);
     sprintf(s_data, "%s,'temp_c':%s,'press_pa':%lu", s_data,
